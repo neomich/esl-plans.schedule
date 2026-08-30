@@ -1,0 +1,36 @@
+import React from 'react';
+import Landing from './pages/Landing.jsx';
+import Admin from './pages/Admin.jsx';
+import PublicBooking from './pages/PublicBooking.jsx';
+import { isSupabaseConfigured } from './lib/supabase.js';
+
+function ConfigWarning() {
+  return (
+    <div className="min-h-screen bg-sky-50 flex items-center justify-center p-6 text-center">
+      <p className="text-sm text-rose-600 max-w-sm">
+        Missing Supabase configuration. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY
+        as environment variables for this app (see README.md).
+      </p>
+    </div>
+  );
+}
+
+export default function App() {
+  if (!isSupabaseConfigured()) return <ConfigWarning />;
+
+  const path = window.location.pathname.replace(/^\/+|\/+$/g, ''); // trim slashes
+
+  if (path === '') return <Landing />;
+
+  const publicMatch = path.match(/^([a-z0-9]+)\/schedule$/);
+  if (publicMatch) return <PublicBooking slug={publicMatch[1]} />;
+
+  const adminMatch = path.match(/^([a-z0-9]+)$/);
+  if (adminMatch) return <Admin slug={adminMatch[1]} />;
+
+  return (
+    <div className="min-h-screen bg-sky-50 flex items-center justify-center p-6 text-center">
+      <p className="text-sm text-stone-500">Page not found.</p>
+    </div>
+  );
+}
