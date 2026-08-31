@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Lock } from 'lucide-react';
 import { supabase } from '../lib/supabase.js';
 import { useBookings } from '../lib/useBookings.js';
-import { CalendarSection, BookingPopup, DeletePopup, SuccessPopup } from '../components/scheduleUI.jsx';
+import { CalendarGrid, Legend, BookingPopup, DeletePopup, SuccessPopup } from '../components/scheduleUI.jsx';
 
 const SAFE_COLUMNS = 'id, slug, student_passcode, headline, show_timezone_note, instructions, colors, avail_from, avail_to, min_length, max_length, include_topic, success_message, timezone';
 
@@ -89,11 +89,11 @@ export default function PublicBooking({ slug }) {
   }
 
   return (
-    <div className="min-h-screen bg-sky-50 font-sans" style={{ touchAction: 'pan-y' }}>
-      <div className="sm:max-w-3xl sm:mx-auto sm:py-8 sm:px-4">
-        <div className="border-0 sm:border sm:border-stone-200 sm:rounded-2xl bg-white sm:shadow-sm relative sm:overflow-hidden min-h-screen sm:min-h-0">
+    <div className="bg-sky-50 font-sans flex flex-col" style={{ height: '100dvh', touchAction: 'pan-y' }}>
+      <div className="sm:max-w-3xl sm:mx-auto sm:py-8 sm:px-4 flex flex-col flex-1 min-h-0 w-full">
+        <div className="border-0 sm:border sm:border-stone-200 sm:rounded-2xl bg-white sm:shadow-sm overflow-hidden flex flex-col flex-1 min-h-0">
           {!unlocked ? (
-            <div className="flex flex-col items-center justify-center py-14 px-6 text-center">
+            <div className="flex-1 flex flex-col items-center justify-center py-14 px-6 text-center">
               <div className="w-11 h-11 rounded-full bg-teal-50 flex items-center justify-center mb-4">
                 <Lock size={18} className="text-teal-700" />
               </div>
@@ -114,14 +114,34 @@ export default function PublicBooking({ slug }) {
               </button>
             </div>
           ) : (
-            <CalendarSection
-              settings={schedule}
-              weekDates={bk.weekDates}
-              setWeekOffset={bk.setWeekOffset}
-              bookings={bk.bookings}
-              onSlotClick={handleSlotClick}
-              boundedHeight={false}
-            />
+            <>
+              {/* Pinned block: headline, subheading, instructions, legend — never scrolls */}
+              <div className="flex-shrink-0 p-2 sm:p-5 pb-2 text-center">
+                <h2 className="text-xl sm:text-lg font-semibold text-stone-800 mb-1">{schedule.headline || 'Book a Lesson'}</h2>
+                {schedule.show_timezone_note && (
+                  <p className="text-sm text-stone-500 mb-3">The slots displayed are in your local time zone!</p>
+                )}
+                {(schedule.instructions || []).filter((i) => i.enabled).length > 0 && (
+                  <div className="text-sm text-stone-600 mb-4 space-y-1.5 text-left">
+                    {schedule.instructions.filter((i) => i.enabled).map((i) => <p key={i.id}>• {i.text}</p>)}
+                  </div>
+                )}
+                <Legend colors={schedule.colors} />
+              </div>
+
+              {/* Remaining space: the calendar itself, which internally pins its
+                  own week-nav + day-header and only scrolls its time slots. */}
+              <div className="flex-1 min-h-0 px-2 sm:px-5 pb-2 sm:pb-5">
+                <CalendarGrid
+                  settings={schedule}
+                  weekDates={bk.weekDates}
+                  setWeekOffset={bk.setWeekOffset}
+                  bookings={bk.bookings}
+                  onSlotClick={handleSlotClick}
+                  boundedHeight={false}
+                />
+              </div>
+            </>
           )}
 
           {bookSlot && (

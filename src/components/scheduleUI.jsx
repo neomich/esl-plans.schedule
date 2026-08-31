@@ -302,17 +302,14 @@ export function CalendarGrid({ settings, weekDates, setWeekOffset, bookings, onS
   );
 
   return (
-    <div className={`border border-stone-200 rounded-lg bg-white ${boundedHeight ? 'overflow-hidden' : ''}`}>
-      <WeekNav weekDates={weekDates} setWeekOffset={setWeekOffset} />
-
-      <div
-        className={`${boundedHeight ? 'max-h-80 overflow-y-auto' : ''} px-1.5 pb-1.5`}
-        style={{ touchAction: 'pan-y' }}
-      >
-        <div
-          style={{ display: 'grid', gridTemplateColumns: GRID_COLUMNS }}
-          className="gap-1 sticky top-0 bg-white z-10 pt-1.5 pb-1.5"
-        >
+    <div
+      className={`border border-stone-200 rounded-lg overflow-hidden bg-white flex flex-col ${boundedHeight ? '' : 'h-full min-h-0'}`}
+      style={boundedHeight ? { maxHeight: '20rem' } : undefined}
+    >
+      {/* Pinned block: never scrolls, always visible */}
+      <div className="flex-shrink-0">
+        <WeekNav weekDates={weekDates} setWeekOffset={setWeekOffset} />
+        <div style={{ display: 'grid', gridTemplateColumns: GRID_COLUMNS }} className="gap-1 px-1.5 pb-1.5">
           <div />
           {weekDates.map((d, i) => {
             const today = isToday(d);
@@ -324,8 +321,11 @@ export function CalendarGrid({ settings, weekDates, setWeekOffset, bookings, onS
             );
           })}
         </div>
+      </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: GRID_COLUMNS, gridAutoRows: '30px' }} className="gap-1">
+      {/* Scrollable block: only the time slots live here */}
+      <div className="flex-1 min-h-0 overflow-y-auto border-t border-stone-100 px-1.5 pb-1.5" style={{ touchAction: 'pan-y' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: GRID_COLUMNS, gridAutoRows: '30px' }} className="gap-1 pt-1.5">
           {times.map((time, rowIdx) => (
             <div
               key={time}
