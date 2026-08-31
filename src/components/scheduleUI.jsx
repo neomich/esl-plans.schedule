@@ -1,8 +1,8 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Check, X, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react';
 import {
   DAY_LABELS, WEEKDAY_FULL, LENGTH_OPTIONS, ALL_TIMES,
-  ordinal, isToday, weekRangeLabel, buildViewerGrid,
+  ordinal, isToday, weekRangeLabel, buildViewerGrid, getScrollbarWidth,
 } from '../lib/dateHelpers.js';
 
 export const PASTELS = [
@@ -126,6 +126,10 @@ export function BookingPopup({ slot, settings, onClose, onConfirm, submitting })
 
   const weekdayFull = WEEKDAY_FULL[slot.day % 7];
   const monthFull = slot.date.toLocaleDateString('en-US', { month: 'long' });
+  const teacherTimeLabel = new Intl.DateTimeFormat('en-US', {
+    timeZone: settings.timezone || 'UTC',
+    hour: 'numeric', minute: '2-digit', hour12: true,
+  }).format(slot.date);
 
   return (
     <PopupShell wide>
@@ -148,7 +152,10 @@ export function BookingPopup({ slot, settings, onClose, onConfirm, submitting })
         className="w-full text-base border border-stone-300 rounded-lg px-3 py-2.5 mb-4 bg-white focus:outline-none focus:ring-2 focus:ring-teal-600/30 focus:border-teal-600"
       />
 
-      <p className="text-sm font-semibold text-stone-600 mb-1.5">Lesson Duration</p>
+      <div className="flex items-center justify-between mb-1.5">
+        <p className="text-sm font-semibold text-stone-600">Lesson Duration</p>
+        <p className="text-xs text-stone-400">({teacherTimeLabel} for your teacher)</p>
+      </div>
       <div className="mb-4">
         <LengthSelect value={duration} onChange={setDuration} options={validLengths} />
       </div>
@@ -312,13 +319,24 @@ export function CalendarGrid({ settings, weekDates, setWeekOffset, bookings, onS
     [weekDates, settings.timezone, settings.avail_from, settings.avail_to, bookings]
   );
 
+  // On platforms with a space-reserving scrollbar (e.g. Windows Chrome),
+  // the scrollable time-slot area is quietly narrower than the pinned
+  // header above it, throwing off column alignment. Measuring the real
+  // width and padding the header to match fixes this on every platform
+  // — including ones with invisible overlay scrollbars, where this is 0
+  // and does nothing.
+  const [scrollbarWidth, setScrollbarWidth] = useState(0);
+  useEffect(() => {
+    setScrollbarWidth(getScrollbarWidth());
+  }, []);
+
   return (
     <div
       className={`border border-stone-200 rounded-lg overflow-hidden bg-white flex flex-col ${boundedHeight ? '' : 'h-full min-h-0'}`}
       style={boundedHeight ? { maxHeight: '20rem' } : undefined}
     >
       {/* Pinned block: never scrolls, always visible */}
-      <div className="flex-shrink-0">
+      <div className="flex-shrink-0" style={{ paddingRight: scrollbarWidth }}>
         <WeekNav weekDates={weekDates} setWeekOffset={setWeekOffset} />
         <div style={{ display: 'grid', gridTemplateColumns: GRID_COLUMNS }} className="gap-1 px-1.5 pb-1.5">
           <div />
@@ -335,7 +353,7 @@ export function CalendarGrid({ settings, weekDates, setWeekOffset, bookings, onS
       </div>
 
       {/* Scrollable block: only the time slots live here */}
-      <div className="flex-1 min-h-0 overflow-y-auto border-t border-stone-100 px-1.5 pb-1.5" style={{ touchAction: 'pan-y' }}>
+      <div className="flex-1 min-h-0 border-t border-stone-100 px-1.5 pb-1.5" style={{ touchAction: 'pan-y', overflowY: 'scroll' }}>
         <div style={{ display: 'grid', gridTemplateColumns: GRID_COLUMNS, gridAutoRows: '30px' }} className="gap-1 pt-1.5">
           {times.map((time, rowIdx) => (
             <div

@@ -78,6 +78,29 @@ export function combineDateAndTime(dayDate, timeStr) {
   return d;
 }
 
+// Measures how wide this browser's scrollbar actually renders (0 on
+// platforms with overlay scrollbars, like macOS/mobile; ~15-17px on
+// classic space-reserving ones, like Windows Chrome). Used to keep a
+// pinned header aligned with a scrollable body sitting right below
+// it — without this, the scrollbar quietly eats into only one of the
+// two, throwing off column alignment on platforms that have one.
+let cachedScrollbarWidth = null;
+export function getScrollbarWidth() {
+  if (cachedScrollbarWidth !== null) return cachedScrollbarWidth;
+  if (typeof document === 'undefined') return 0;
+  const outer = document.createElement('div');
+  outer.style.visibility = 'hidden';
+  outer.style.overflow = 'scroll';
+  outer.style.position = 'absolute';
+  outer.style.top = '-9999px';
+  const inner = document.createElement('div');
+  outer.appendChild(inner);
+  document.body.appendChild(outer);
+  cachedScrollbarWidth = outer.offsetWidth - inner.offsetWidth;
+  document.body.removeChild(outer);
+  return cachedScrollbarWidth;
+}
+
 // Given an instant and an IANA timezone, returns how many ms that
 // timezone's wall clock is ahead of UTC at that instant (handles DST).
 export function getTimeZoneOffsetMs(date, timeZone) {
