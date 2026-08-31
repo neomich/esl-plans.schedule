@@ -135,9 +135,9 @@ export function BookingPopup({ slot, settings, onClose, onConfirm, submitting })
       <p
         className="font-bold text-rose-700 mb-4 whitespace-nowrap overflow-hidden text-ellipsis pr-6"
         style={{ fontSize: 'clamp(13px, 4.6vw, 19px)' }}
-        title={`Book a Lesson for ${weekdayFull} ${slot.time} on ${monthFull} ${ordinal(slot.date.getDate())}?`}
+        title={`Book ${weekdayFull} ${slot.time} on ${monthFull} ${ordinal(slot.date.getDate())}?`}
       >
-        Book a Lesson for {weekdayFull} {slot.time} on {monthFull} {ordinal(slot.date.getDate())}?
+        Book {weekdayFull} {slot.time} on {monthFull} {ordinal(slot.date.getDate())}?
       </p>
 
       <input
@@ -258,7 +258,7 @@ export function CalendarSection({ settings, weekDates, setWeekOffset, bookings, 
         <p className="text-sm text-stone-500 mb-3">The slots displayed are in your local time zone!</p>
       )}
       {(settings.instructions || []).filter((i) => i.enabled).length > 0 && (
-        <div className="text-sm text-stone-600 mb-4 space-y-1.5">
+        <div className="text-sm text-stone-600 mb-4 space-y-1.5 text-left">
           {settings.instructions.filter((i) => i.enabled).map((i) => <p key={i.id}>• {i.text}</p>)}
         </div>
       )}
@@ -270,7 +270,7 @@ export function CalendarSection({ settings, weekDates, setWeekOffset, bookings, 
 
 function WeekNav({ weekDates, setWeekOffset }) {
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: GRID_COLUMNS }} className="items-center py-1.5 px-1.5">
+    <div style={{ display: 'grid', gridTemplateColumns: GRID_COLUMNS }} className="items-center py-1.5 px-1.5 gap-1">
       <div style={{ gridColumn: 2 }} className="flex justify-start">
         <button onClick={() => setWeekOffset((o) => o - 1)} className="w-7 h-7 rounded-lg bg-sky-100 flex items-center justify-center hover:bg-sky-200 transition-colors">
           <ChevronLeft size={15} className="text-stone-700" />
@@ -343,7 +343,7 @@ export function CalendarGrid({ settings, weekDates, setWeekOffset, bookings, onS
                   <button
                     key={`${dayIdx}-${cell.rowStart}`}
                     onClick={() => onSlotClick(dayIdx, cell.time, null, cell.utcInstant)}
-                    style={{ backgroundColor: settings.colors.free, gridColumn: dayIdx + 2, gridRow: cell.rowStart + 1, fontSize: 'clamp(10px, 3vw, 13px)' }}
+                    style={{ backgroundColor: settings.colors.free, gridColumn: dayIdx + 2, gridRow: cell.rowStart + 1, fontSize: 'clamp(8px, 2.2vw, 10px)' }}
                     className="rounded flex items-center justify-center text-stone-700 hover:brightness-95 transition-all"
                   >
                     Add
@@ -358,11 +358,23 @@ export function CalendarGrid({ settings, weekDates, setWeekOffset, bookings, onS
                     backgroundColor: settings.colors[cell.booking.booking_type],
                     gridColumn: dayIdx + 2,
                     gridRow: `${cell.rowStart + 1} / span ${cell.span}`,
-                    fontSize: 'clamp(9px, 2.8vw, 13px)',
                   }}
-                  className="rounded font-medium flex items-center justify-center text-center px-0.5 text-stone-800 hover:brightness-95 transition-all leading-tight"
+                  className="rounded font-medium flex items-center justify-center px-1.5 text-stone-800 hover:brightness-95 transition-all leading-tight overflow-hidden"
                 >
-                  {cell.booking.student_name}
+                  <span
+                    className="whitespace-nowrap overflow-hidden inline-block max-w-full"
+                    style={{
+                      fontSize: 'clamp(9px, 2.8vw, 13px)',
+                      ...(cell.booking.student_name.length > 7
+                        ? {
+                            WebkitMaskImage: 'linear-gradient(to right, black 60%, transparent 95%)',
+                            maskImage: 'linear-gradient(to right, black 60%, transparent 95%)',
+                          }
+                        : {}),
+                    }}
+                  >
+                    {cell.booking.student_name}
+                  </span>
                 </button>
               );
             })
