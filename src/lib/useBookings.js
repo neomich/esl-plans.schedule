@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from './supabase.js';
-import { getWeekDates, combineDateAndTime } from './dateHelpers.js';
+import { getWeekDates } from './dateHelpers.js';
 
 export function useBookings(scheduleId) {
   const [weekOffset, setWeekOffset] = useState(0);
@@ -30,8 +30,7 @@ export function useBookings(scheduleId) {
     refetch();
   }, [refetch]);
 
-  const createBooking = async ({ dayDate, time, name, duration, type, topic }) => {
-    const start = combineDateAndTime(dayDate, time);
+  const createBooking = async ({ start, name, duration, type, topic }) => {
     const end = new Date(start.getTime() + duration * 60000);
     const { error } = await supabase.from('bookings').insert([{
       schedule_id: scheduleId,

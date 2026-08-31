@@ -15,11 +15,11 @@ serve(async (req) => {
     const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
 
-    const { schedule_id, student_name, time, duration, booking_type, topic } = await req.json();
+    const { schedule_id, student_name, start_time, duration, booking_type, topic } = await req.json();
 
     const { data: schedule, error } = await supabase
       .from('schedules')
-      .select('telegram_enabled, telegram_bot_token, telegram_chat_id, slug')
+      .select('telegram_enabled, telegram_bot_token, telegram_chat_id, slug, timezone')
       .eq('id', schedule_id)
       .single();
 
@@ -30,11 +30,16 @@ serve(async (req) => {
       });
     }
 
+    const teacherLocalTime = new Intl.DateTimeFormat('en-GB', {
+      timeZone: schedule.timezone || 'UTC',
+      weekday: 'short', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit',
+    }).format(new Date(start_time));
+
     const typeLabel = booking_type === 'fixed' ? 'Fixed lesson' : 'This week only';
     const lines = [
       `📅 New booking on your schedule!`,
       `Student: ${student_name}`,
-      `Time: ${time}`,
+      `Time: ${teacherLocalTime} (your time)`,
       `Duration: ${duration} minutes`,
       `Type: ${typeLabel}`,
     ];

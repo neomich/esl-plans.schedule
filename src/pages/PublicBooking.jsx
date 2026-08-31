@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase.js';
 import { useBookings } from '../lib/useBookings.js';
 import { CalendarSection, BookingPopup, DeletePopup, SuccessPopup } from '../components/scheduleUI.jsx';
 
-const SAFE_COLUMNS = 'id, slug, student_passcode, headline, show_timezone_note, instructions, colors, avail_from, avail_to, min_length, max_length, include_topic, success_message';
+const SAFE_COLUMNS = 'id, slug, student_passcode, headline, show_timezone_note, instructions, colors, avail_from, avail_to, min_length, max_length, include_topic, success_message, timezone';
 
 export default function PublicBooking({ slug }) {
   const [schedule, setSchedule] = useState(null);
@@ -41,17 +41,17 @@ export default function PublicBooking({ slug }) {
     localStorage.setItem(`passcode_${slug}`, entered);
   };
 
-  const handleSlotClick = (day, time, existingBooking) => {
+  const handleSlotClick = (day, time, existingBooking, utcInstant) => {
     if (existingBooking) {
       setDeleteTarget(existingBooking);
     } else {
-      setBookSlot({ day, time, date: bk.weekDates[day] });
+      setBookSlot({ day, time, date: utcInstant });
     }
   };
 
   const confirmBooking = async ({ name, duration, type, topic }) => {
     setSubmitting(true);
-    const { error } = await bk.createBooking({ dayDate: bookSlot.date, time: bookSlot.time, name, duration, type, topic });
+    const { error } = await bk.createBooking({ start: bookSlot.date, name, duration, type, topic });
     setSubmitting(false);
     if (!error) {
       setBookSlot(null);
@@ -61,7 +61,6 @@ export default function PublicBooking({ slug }) {
           schedule_id: schedule.id,
           student_name: name,
           start_time: bookSlot.date.toISOString(),
-          time: bookSlot.time,
           duration,
           booking_type: type,
           topic,

@@ -19,12 +19,24 @@ export default function Landing() {
     }
     setLoading(true);
     setError('');
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
     const { data, error: rpcError } = await supabase.rpc('create_schedule', {
       p_desired_slug: desiredSlug.trim(),
       p_passcode: passcode.trim() || '123',
+      p_timezone: timezone,
     });
     setLoading(false);
-    if (rpcError || !data || !data[0]) {
+    if (rpcError) {
+      if (rpcError.message?.includes('slug_taken')) {
+        setError('That name is already in use — please think of another one.');
+      } else if (rpcError.message?.includes('empty_slug')) {
+        setError('Please enter a name for your schedule link.');
+      } else {
+        setError('Something went wrong creating your schedule. Please try again.');
+      }
+      return;
+    }
+    if (!data || !data[0]) {
       setError('Something went wrong creating your schedule. Please try again.');
       return;
     }
@@ -62,6 +74,10 @@ export default function Landing() {
           className="w-full text-center text-lg font-medium tracking-widest border border-stone-300 rounded-lg px-3 py-2.5 mb-1 focus:outline-none focus:ring-2 focus:ring-teal-600/30 focus:border-teal-600"
         />
         <p className="text-xs text-stone-400 mb-6">You can change this anytime from your settings page.</p>
+
+        <p className="text-[11px] text-stone-400 mb-4">
+          Detected timezone: <span className="font-medium text-stone-500">{Intl.DateTimeFormat().resolvedOptions().timeZone}</span> — students in other timezones will automatically see times converted to their own.
+        </p>
 
         {error && <p className="text-xs text-rose-500 mb-4">{error}</p>}
 

@@ -38,6 +38,7 @@ export default function Admin({ slug }) {
         student_passcode: data.student_passcode,
         telegram_enabled: data.telegram_enabled,
         telegram_bot_token: data.telegram_bot_token || '',
+        timezone: data.timezone,
       });
       setAuthorized(true);
       setLoading(false);
@@ -84,14 +85,14 @@ export default function Admin({ slug }) {
     setTimeout(() => setSaveStatus(''), 2500);
   };
 
-  const handleSlotClick = (day, time, existingBooking) => {
+  const handleSlotClick = (day, time, existingBooking, utcInstant) => {
     if (existingBooking) setDeleteTarget(existingBooking);
-    else setBookSlot({ day, time, date: bk.weekDates[day] });
+    else setBookSlot({ day, time, date: utcInstant });
   };
 
   const confirmBooking = async ({ name, duration, type, topic }) => {
     setSubmitting(true);
-    const { error } = await bk.createBooking({ dayDate: bookSlot.date, time: bookSlot.time, name, duration, type, topic });
+    const { error } = await bk.createBooking({ start: bookSlot.date, name, duration, type, topic });
     setSubmitting(false);
     if (!error) { setBookSlot(null); setSuccessOpen(true); }
   };
@@ -217,7 +218,10 @@ export default function Admin({ slug }) {
             onChange={(e) => update({ student_passcode: e.target.value })}
             className="text-sm border border-stone-300 rounded-lg px-3 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-teal-600/30 focus:border-teal-600"
           />
-          <p className="text-[11px] text-stone-400 mt-2">Changing this won't affect students who've already unlocked the page on their device.</p>
+          <p className="text-[11px] text-amber-600 mt-2">
+            ⚠️ Emergency use only. Changing this will lock out every student the next time they visit —
+            they'll all need the new code before they can book again. Don't change it for routine reasons.
+          </p>
         </Section>
 
         <Section icon={Send} title="Telegram notifications">

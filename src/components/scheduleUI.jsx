@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Check, X, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react';
 import {
   DAY_LABELS, WEEKDAY_FULL, LENGTH_OPTIONS, ALL_TIMES,
-  ordinal, isToday, weekRangeLabel, buildDayCells,
+  ordinal, isToday, weekRangeLabel, buildViewerGrid,
 } from '../lib/dateHelpers.js';
 
 export const PASTELS = [
@@ -290,17 +290,16 @@ function WeekNav({ weekDates, setWeekOffset }) {
 
 // bookings: array of real rows (start_time/end_time/duration/booking_type/student_name/topic)
 export function CalendarGrid({ settings, weekDates, setWeekOffset, bookings, onSlotClick, boundedHeight = true }) {
-  const times = useMemo(
-    () => ALL_TIMES.filter((t) => t >= settings.avail_from && t <= settings.avail_to),
-    [settings.avail_from, settings.avail_to]
+  const { times, cellsByDay } = useMemo(
+    () => buildViewerGrid({
+      weekDates,
+      timezone: settings.timezone || 'UTC',
+      availFrom: settings.avail_from,
+      availTo: settings.avail_to,
+      bookings,
+    }),
+    [weekDates, settings.timezone, settings.avail_from, settings.avail_to, bookings]
   );
-
-  const dayCells = useMemo(() => {
-    return weekDates.map((dayDate) => {
-      const bookingsForDay = bookings.filter((b) => new Date(b.start_time).toDateString() === dayDate.toDateString());
-      return buildDayCells(dayDate, times, bookingsForDay);
-    });
-  }, [weekDates, times, bookings]);
 
   return (
     <div className="border border-stone-200 rounded-lg overflow-hidden bg-white">
@@ -333,13 +332,13 @@ export function CalendarGrid({ settings, weekDates, setWeekOffset, bookings, onS
             </div>
           ))}
 
-          {dayCells.map((cells, dayIdx) =>
+          {cellsByDay.map((cells, dayIdx) =>
             cells.map((cell) => {
               if (cell.type === 'free') {
                 return (
                   <button
                     key={`${dayIdx}-${cell.rowStart}`}
-                    onClick={() => onSlotClick(dayIdx, cell.time, null)}
+                    onClick={() => onSlotClick(dayIdx, cell.time, null, cell.utcInstant)}
                     style={{ backgroundColor: settings.colors.free, gridColumn: dayIdx + 2, gridRow: cell.rowStart + 1 }}
                     className="rounded text-[9px] flex items-center justify-center text-stone-700 hover:brightness-95 transition-all"
                   >
@@ -350,7 +349,7 @@ export function CalendarGrid({ settings, weekDates, setWeekOffset, bookings, onS
               return (
                 <button
                   key={`${dayIdx}-${cell.rowStart}`}
-                  onClick={() => onSlotClick(dayIdx, null, cell.booking)}
+                  onClick={() => onSlotClick(dayIdx, null, cell.booking, null)}
                   style={{
                     backgroundColor: settings.colors[cell.booking.booking_type],
                     gridColumn: dayIdx + 2,

@@ -78,26 +78,93 @@ export function combineDateAndTime(dayDate, timeStr) {
   return d;
 }
 
-// Given a week's worth of bookings (each with a real start_time /
-// end_time), group them per day into either single free slots or
-// one merged block per booking, sized by how many 30-min slots its
-// duration covers. This powers the "block height = lesson length"
-// visual from the prototype.
-export function buildDayCells(dayDate, times, bookingsForDay) {
-  const cells = [];
-  let i = 0;
-  while (i < times.length) {
-    const time = times[i];
-    const booking = bookingsForDay.find((b) => timeStringFromDate(new Date(b.start_time)) === time);
-    if (booking) {
-      const rawSpan = Math.max(1, Math.round(booking.duration / 30));
-      const span = Math.min(rawSpan, times.length - i);
-      cells.push({ type: 'booking', rowStart: i, span, booking });
-      i += span;
-    } else {
-      cells.push({ type: 'free', rowStart: i, time });
-      i += 1;
+// Given an instant and an IANA timezone, returns how many ms that
+// timezone's wall clock is ahead of UTC at that instant (handles DST).
+export function getTimeZoneOffsetMs(date, timeZone) {
+  const dtf = new Intl.DateTimeFormat('en-US', {
+    timeZone, hourCycle: 'h23',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+  });
+  const parts = {};
+  for (const p of dtf.formatToParts(date)) parts[p.type] = p.value;
+  const asUTC = Date.UTC(
+    Number(parts.year), Number(parts.month) - 1, Number(parts.day),
+    Number(parts.hour), Number(parts.minute), Number(parts.second)
+  );
+  return asUTC - date.getTime();
+}
+
+// Converts a wall-clock date/time meant to be read in `timeZone` into
+// the actual UTC instant it represents.
+export function zonedTimeToUtc(year, month, day, hour, minute, timeZone) {
+  let guess = Date.UTC(year, month - 1, day, hour, minute);
+  for (let i = 0; i < 2; i++) {
+    const offset = getTimeZoneOffsetMs(new Date(guess), timeZone);
+    guess = Date.UTC(year, month - 1, day, hour, minute) - offset;
+  }
+  return new Date(guess);
+}
+
+// The core of real timezone support: the teacher's working hours are
+// wall-clock times in THEIR timezone. This walks a generous window of
+// candidate teacher-local calendar days, converts each potential slot
+// to its real UTC instant, then re-reads that instant using the
+// viewer's own local time (plain JS Date getters already do this
+// automatically) to see which day/time it lands on for THEM. Slots
+// can legitimately shift to a different calendar day for the viewer
+// than for the teacher — that's correct, not a bug.
+export function buildViewerGrid({ weekDates, timezone, availFrom, availTo, bookings }) {
+  const [fromH, fromM] = availFrom.split(':').map(Number);
+  const [toH, toM] = availTo.split(':').map(Number);
+  const fromMinutes = fromH * 60 + fromM;
+  const toMinutes = toH * 60 + toM;
+
+  const scanStart = new Date(weekDates[0]);
+  scanStart.setDate(scanStart.getDate() - 2);
+  const scanDays = 11; // 7 displayed days + 2-day buffer each side
+
+  const byDay = Array.from({ length: 7 }, () => []);
+
+  for (let i = 0; i < scanDays; i++) {
+    const candidate = new Date(scanStart);
+    candidate.setDate(candidate.getDate() + i);
+    const y = candidate.getFullYear();
+    const m = candidate.getMonth() + 1;
+    const d = candidate.getDate();
+
+    for (let mins = fromMinutes; mins <= toMinutes; mins += 30) {
+      const hh = Math.floor(mins / 60);
+      const mm = mins % 60;
+      const utcInstant = zonedTimeToUtc(y, m, d, hh, mm, timezone);
+      const viewerDayIdx = weekDates.findIndex((wd) => wd.toDateString() === utcInstant.toDateString());
+      if (viewerDayIdx === -1) continue;
+      const viewerTime = `${utcInstant.getHours().toString().padStart(2, '0')}:${utcInstant.getMinutes().toString().padStart(2, '0')}`;
+      byDay[viewerDayIdx].push({ utcInstant, viewerTime });
     }
   }
-  return cells;
+
+  byDay.forEach((daySlots) => daySlots.sort((a, b) => a.utcInstant - b.utcInstant));
+  const times = Array.from(new Set(byDay.flat().map((s) => s.viewerTime))).sort();
+
+  const cellsByDay = byDay.map((daySlots) => {
+    const cells = [];
+    let i = 0;
+    while (i < daySlots.length) {
+      const slot = daySlots[i];
+      const booking = (bookings || []).find((b) => new Date(b.start_time).getTime() === slot.utcInstant.getTime());
+      const rowStart = times.indexOf(slot.viewerTime);
+      if (booking) {
+        const span = Math.max(1, Math.round(booking.duration / 30));
+        cells.push({ type: 'booking', rowStart, span, booking });
+        i += span;
+      } else {
+        cells.push({ type: 'free', rowStart, time: slot.viewerTime, utcInstant: slot.utcInstant });
+        i += 1;
+      }
+    }
+    return cells;
+  });
+
+  return { times, cellsByDay };
 }
