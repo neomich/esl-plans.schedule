@@ -86,7 +86,7 @@ export default function Admin({ slug }) {
   };
 
   const handleSlotClick = (day, time, existingBooking, utcInstant) => {
-    if (existingBooking) setDeleteTarget(existingBooking);
+    if (existingBooking) setDeleteTarget({ ...existingBooking, occurrenceInstant: utcInstant });
     else setBookSlot({ day, time, date: utcInstant });
   };
 

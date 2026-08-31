@@ -15,13 +15,26 @@ export function useBookings(scheduleId) {
     const rangeStart = new Date(weekDates[0]);
     const rangeEnd = new Date(weekDates[6]);
     rangeEnd.setHours(23, 59, 59, 999);
-    const { data, error } = await supabase
-      .from('bookings')
-      .select('*')
-      .eq('schedule_id', scheduleId)
-      .gte('start_time', rangeStart.toISOString())
-      .lte('start_time', rangeEnd.toISOString());
-    if (!error && data) setBookings(data);
+
+    const [oneTimeRes, fixedRes] = await Promise.all([
+      supabase.from('bookings').select('*')
+        .eq('schedule_id', scheduleId)
+        .neq('booking_type', 'fixed')
+        .gte('start_time', rangeStart.toISOString())
+        .lte('start_time', rangeEnd.toISOString()),
+      // Fixed bookings recur every week from when they were first made,
+      // so we fetch all of them up through this week (not scoped to
+      // this week's date range) and let buildViewerGrid project them
+      // onto whichever week is being displayed.
+      supabase.from('bookings').select('*')
+        .eq('schedule_id', scheduleId)
+        .eq('booking_type', 'fixed')
+        .lte('start_time', rangeEnd.toISOString()),
+    ]);
+
+    if (!oneTimeRes.error && !fixedRes.error) {
+      setBookings([...(oneTimeRes.data || []), ...(fixedRes.data || [])]);
+    }
     setLoading(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scheduleId, weekOffset]);

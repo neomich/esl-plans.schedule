@@ -133,8 +133,8 @@ export function BookingPopup({ slot, settings, onClose, onConfirm, submitting })
         <X size={16} />
       </button>
       <p
-        className="font-bold text-rose-700 mb-4 whitespace-nowrap overflow-hidden text-ellipsis pr-6"
-        style={{ fontSize: 'clamp(13px, 4.6vw, 19px)' }}
+        className="font-bold text-rose-700 mb-4 whitespace-nowrap overflow-hidden pr-6"
+        style={{ fontSize: 'clamp(9px, 3vw, 16px)' }}
         title={`Book ${weekdayFull} ${slot.time} on ${monthFull} ${ordinal(slot.date.getDate())}?`}
       >
         Book {weekdayFull} {slot.time} on {monthFull} {ordinal(slot.date.getDate())}?
@@ -207,8 +207,9 @@ export function BookingPopup({ slot, settings, onClose, onConfirm, submitting })
 }
 
 export function DeletePopup({ booking, onClose, onConfirm, submitting }) {
-  const dateLabel = new Date(booking.start_time).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-  const timeLabel = new Date(booking.start_time).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  const displayInstant = booking.occurrenceInstant || new Date(booking.start_time);
+  const dateLabel = displayInstant.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  const timeLabel = displayInstant.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
   return (
     <PopupShell>
       <p className="text-xl font-bold text-stone-800 mb-4">Delete Booking</p>
@@ -218,6 +219,11 @@ export function DeletePopup({ booking, onClose, onConfirm, submitting }) {
         <p><span className="font-semibold">Duration:</span> {booking.duration} minutes</p>
         <p><span className="font-semibold">Type:</span> {booking.booking_type}</p>
       </div>
+      {booking.booking_type === 'fixed' && (
+        <p className="text-sm text-amber-600 mb-4">
+          This is a fixed (recurring) booking — deleting it cancels every future week, not just this one.
+        </p>
+      )}
       <div className="flex items-center justify-end gap-4">
         <button onClick={onClose} className="text-base text-stone-600 hover:text-stone-800">Cancel</button>
         <button
@@ -258,8 +264,13 @@ export function CalendarSection({ settings, weekDates, setWeekOffset, bookings, 
         <p className="text-sm text-stone-500 mb-1.5 leading-tight">The slots displayed are in your local time zone!</p>
       )}
       {(settings.instructions || []).filter((i) => i.enabled).length > 0 && (
-        <div className="text-sm text-stone-600 mb-1.5 space-y-0.5 text-left leading-snug">
-          {settings.instructions.filter((i) => i.enabled).map((i) => <p key={i.id}>• {i.text}</p>)}
+        <div className="text-sm text-stone-600 mb-1.5 space-y-1 text-left leading-snug pl-6">
+          {settings.instructions.filter((i) => i.enabled).map((i) => (
+            <p key={i.id} className="flex gap-2">
+              <span className="text-teal-600 font-bold text-base leading-snug shrink-0">•</span>
+              <span>{i.text}</span>
+            </p>
+          ))}
         </div>
       )}
       <Legend colors={settings.colors} />
@@ -272,7 +283,7 @@ function WeekNav({ weekDates, setWeekOffset }) {
   return (
     <div style={{ display: 'grid', gridTemplateColumns: GRID_COLUMNS }} className="items-center py-1.5 px-1.5 gap-1">
       <div style={{ gridColumn: 2 }} className="flex justify-start">
-        <button onClick={() => setWeekOffset((o) => o - 1)} className="w-7 h-7 rounded-lg bg-sky-100 flex items-center justify-center hover:bg-sky-200 transition-colors">
+        <button onClick={() => setWeekOffset((o) => o - 1)} className="w-14 h-7 rounded-full bg-sky-100 flex items-center justify-center hover:bg-sky-200 transition-colors">
           <ChevronLeft size={15} className="text-stone-700" />
         </button>
       </div>
@@ -280,7 +291,7 @@ function WeekNav({ weekDates, setWeekOffset }) {
         <p className="text-sm font-semibold text-stone-800 whitespace-nowrap">{weekRangeLabel(weekDates)}</p>
       </div>
       <div style={{ gridColumn: 8 }} className="flex justify-end">
-        <button onClick={() => setWeekOffset((o) => o + 1)} className="w-7 h-7 rounded-lg bg-sky-100 flex items-center justify-center hover:bg-sky-200 transition-colors">
+        <button onClick={() => setWeekOffset((o) => o + 1)} className="w-14 h-7 rounded-full bg-sky-100 flex items-center justify-center hover:bg-sky-200 transition-colors">
           <ChevronRight size={15} className="text-stone-700" />
         </button>
       </div>
@@ -353,7 +364,7 @@ export function CalendarGrid({ settings, weekDates, setWeekOffset, bookings, onS
               return (
                 <button
                   key={`${dayIdx}-${cell.rowStart}`}
-                  onClick={() => onSlotClick(dayIdx, null, cell.booking, null)}
+                  onClick={() => onSlotClick(dayIdx, null, cell.booking, cell.utcInstant)}
                   style={{
                     backgroundColor: settings.colors[cell.booking.booking_type],
                     gridColumn: dayIdx + 2,

@@ -43,7 +43,7 @@ export default function PublicBooking({ slug }) {
 
   const handleSlotClick = (day, time, existingBooking, utcInstant) => {
     if (existingBooking) {
-      setDeleteTarget(existingBooking);
+      setDeleteTarget({ ...existingBooking, occurrenceInstant: utcInstant });
     } else {
       setBookSlot({ day, time, date: utcInstant });
     }
@@ -122,8 +122,13 @@ export default function PublicBooking({ slug }) {
                   <p className="text-sm text-stone-500 mb-1.5 leading-tight">The slots displayed are in your local time zone!</p>
                 )}
                 {(schedule.instructions || []).filter((i) => i.enabled).length > 0 && (
-                  <div className="text-sm text-stone-600 mb-1.5 space-y-0.5 text-left leading-snug">
-                    {schedule.instructions.filter((i) => i.enabled).map((i) => <p key={i.id}>• {i.text}</p>)}
+                  <div className="text-sm text-stone-600 mb-1.5 space-y-1 text-left leading-snug pl-6">
+                    {schedule.instructions.filter((i) => i.enabled).map((i) => (
+                      <p key={i.id} className="flex gap-2">
+                        <span className="text-teal-600 font-bold text-base leading-snug shrink-0">•</span>
+                        <span>{i.text}</span>
+                      </p>
+                    ))}
                   </div>
                 )}
                 <Legend colors={schedule.colors} />

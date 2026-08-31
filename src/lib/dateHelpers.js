@@ -106,6 +106,22 @@ export function zonedTimeToUtc(year, month, day, hour, minute, timeZone) {
   return new Date(guess);
 }
 
+// Reads an instant's wall-clock date/time components as seen in the
+// given IANA timezone.
+export function getZonedYMDHM(date, timeZone) {
+  const dtf = new Intl.DateTimeFormat('en-US', {
+    timeZone, hourCycle: 'h23',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit',
+  });
+  const parts = {};
+  for (const p of dtf.formatToParts(date)) parts[p.type] = p.value;
+  return {
+    year: Number(parts.year), month: Number(parts.month), day: Number(parts.day),
+    hour: Number(parts.hour), minute: Number(parts.minute),
+  };
+}
+
 // The core of real timezone support: the teacher's working hours are
 // wall-clock times in THEIR timezone. This walks a generous window of
 // candidate teacher-local calendar days, converts each potential slot
@@ -114,11 +130,29 @@ export function zonedTimeToUtc(year, month, day, hour, minute, timeZone) {
 // automatically) to see which day/time it lands on for THEM. Slots
 // can legitimately shift to a different calendar day for the viewer
 // than for the teacher — that's correct, not a bug.
+//
+// "Fixed" bookings are a standing weekly commitment, not a one-off —
+// so instead of matching by exact stored timestamp, they're matched
+// by their teacher-local weekday + time-of-day pattern, which makes
+// them recur automatically on every future week from when they were
+// first booked. "Weekly" (one-time / "this week only") bookings still
+// match by their exact stored instant, same as before.
 export function buildViewerGrid({ weekDates, timezone, availFrom, availTo, bookings }) {
   const [fromH, fromM] = availFrom.split(':').map(Number);
   const [toH, toM] = availTo.split(':').map(Number);
   const fromMinutes = fromH * 60 + fromM;
   const toMinutes = toH * 60 + toM;
+
+  const oneTimeBookings = (bookings || []).filter((b) => b.booking_type !== 'fixed');
+  const fixedBookings = (bookings || []).filter((b) => b.booking_type === 'fixed');
+
+  const fixedPatterns = fixedBookings.map((b) => {
+    const zoned = getZonedYMDHM(new Date(b.start_time), timezone);
+    const weekday = new Date(zoned.year, zoned.month - 1, zoned.day).getDay();
+    const timeStr = `${String(zoned.hour).padStart(2, '0')}:${String(zoned.minute).padStart(2, '0')}`;
+    const originStamp = zoned.year * 10000 + zoned.month * 100 + zoned.day;
+    return { booking: b, weekday, timeStr, originStamp };
+  });
 
   const scanStart = new Date(weekDates[0]);
   scanStart.setDate(scanStart.getDate() - 2);
@@ -132,15 +166,23 @@ export function buildViewerGrid({ weekDates, timezone, availFrom, availTo, booki
     const y = candidate.getFullYear();
     const m = candidate.getMonth() + 1;
     const d = candidate.getDate();
+    const candidateWeekday = candidate.getDay();
+    const candidateStamp = y * 10000 + m * 100 + d;
 
     for (let mins = fromMinutes; mins <= toMinutes; mins += 30) {
       const hh = Math.floor(mins / 60);
       const mm = mins % 60;
+      const timeStr = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
       const utcInstant = zonedTimeToUtc(y, m, d, hh, mm, timezone);
       const viewerDayIdx = weekDates.findIndex((wd) => wd.toDateString() === utcInstant.toDateString());
       if (viewerDayIdx === -1) continue;
       const viewerTime = `${utcInstant.getHours().toString().padStart(2, '0')}:${utcInstant.getMinutes().toString().padStart(2, '0')}`;
-      byDay[viewerDayIdx].push({ utcInstant, viewerTime });
+
+      const fixedMatch = fixedPatterns.find(
+        (fp) => fp.weekday === candidateWeekday && fp.timeStr === timeStr && candidateStamp >= fp.originStamp
+      );
+
+      byDay[viewerDayIdx].push({ utcInstant, viewerTime, fixedBooking: fixedMatch ? fixedMatch.booking : null });
     }
   }
 
@@ -152,11 +194,12 @@ export function buildViewerGrid({ weekDates, timezone, availFrom, availTo, booki
     let i = 0;
     while (i < daySlots.length) {
       const slot = daySlots[i];
-      const booking = (bookings || []).find((b) => new Date(b.start_time).getTime() === slot.utcInstant.getTime());
+      const oneTime = oneTimeBookings.find((b) => new Date(b.start_time).getTime() === slot.utcInstant.getTime());
+      const booking = oneTime || slot.fixedBooking;
       const rowStart = times.indexOf(slot.viewerTime);
       if (booking) {
         const span = Math.max(1, Math.round(booking.duration / 30));
-        cells.push({ type: 'booking', rowStart, span, booking });
+        cells.push({ type: 'booking', rowStart, span, booking, utcInstant: slot.utcInstant });
         i += span;
       } else {
         cells.push({ type: 'free', rowStart, time: slot.viewerTime, utcInstant: slot.utcInstant });
