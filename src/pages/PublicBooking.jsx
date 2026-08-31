@@ -89,7 +89,7 @@ export default function PublicBooking({ slug }) {
   }
 
   return (
-    <div className="min-h-screen bg-sky-50 font-sans overflow-x-hidden" style={{ touchAction: 'pan-y' }}>
+    <div className="min-h-screen bg-sky-50 font-sans" style={{ touchAction: 'pan-y' }}>
       <div className="sm:max-w-3xl sm:mx-auto sm:py-8 sm:px-4">
         <div className="border-0 sm:border sm:border-stone-200 sm:rounded-2xl bg-white sm:shadow-sm relative overflow-hidden min-h-screen sm:min-h-0">
           {!unlocked ? (

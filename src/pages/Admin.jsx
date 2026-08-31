@@ -128,7 +128,7 @@ export default function Admin({ slug }) {
   }
 
   return (
-    <div className="min-h-screen bg-sky-50 font-sans overflow-x-hidden" style={{ touchAction: 'pan-y' }}>
+    <div className="min-h-screen bg-sky-50 font-sans" style={{ touchAction: 'pan-y' }}>
       <div className="border-b border-stone-200 bg-white px-6 py-3 flex items-center justify-between">
         <p className="text-sm font-semibold text-stone-800">Your schedule settings</p>
         <div className="flex items-center gap-1.5 text-xs text-stone-400">

@@ -19,7 +19,7 @@ export const PASTELS = [
 ];
 
 export const POPUP_BG = '#FCE9D4';
-const GRID_COLUMNS = '52px repeat(7, minmax(0, 1fr))';
+const GRID_COLUMNS = 'clamp(30px, 9vw, 52px) repeat(7, minmax(0, 1fr))';
 
 export function Section({ icon: Icon, title, children }) {
   return (
@@ -96,7 +96,7 @@ export function Toggle({ checked, onChange }) {
 
 export function Legend({ colors }) {
   return (
-    <div className="flex flex-wrap gap-4 text-xs text-stone-600 mb-4">
+    <div className="flex flex-wrap justify-center gap-4 text-sm text-stone-600 mb-4">
       <span className="flex items-center gap-1.5"><span className="w-3.5 h-3.5 rounded-full border border-black/10" style={{ backgroundColor: colors.free }} />Free</span>
       <span className="flex items-center gap-1.5"><span className="w-3.5 h-3.5 rounded-full border border-black/10" style={{ backgroundColor: colors.weekly }} />Booked this week</span>
       <span className="flex items-center gap-1.5"><span className="w-3.5 h-3.5 rounded-full border border-black/10" style={{ backgroundColor: colors.fixed }} />Fixed</span>
@@ -106,7 +106,7 @@ export function Legend({ colors }) {
 
 export function PopupShell({ children, wide }) {
   return (
-    <div className="absolute inset-0 bg-black/30 backdrop-blur-[1px] flex items-center justify-center z-20 rounded-2xl p-3">
+    <div className="fixed inset-0 bg-black/30 backdrop-blur-[1px] flex items-center justify-center z-50 p-3">
       <div
         className={`rounded-xl shadow-xl w-full ${wide ? 'max-w-md' : 'max-w-xs'} p-5 relative`}
         style={{ backgroundColor: POPUP_BG }}
@@ -134,7 +134,7 @@ export function BookingPopup({ slot, settings, onClose, onConfirm, submitting })
       </button>
       <p
         className="font-bold text-rose-700 mb-4 whitespace-nowrap overflow-hidden text-ellipsis pr-6"
-        style={{ fontSize: 'clamp(10px, 3.6vw, 15px)' }}
+        style={{ fontSize: 'clamp(13px, 4.6vw, 19px)' }}
         title={`Book a Lesson for ${weekdayFull} ${slot.time} on ${monthFull} ${ordinal(slot.date.getDate())}?`}
       >
         Book a Lesson for {weekdayFull} {slot.time} on {monthFull} {ordinal(slot.date.getDate())}?
@@ -142,24 +142,24 @@ export function BookingPopup({ slot, settings, onClose, onConfirm, submitting })
 
       <input
         value={name}
-        onChange={(e) => setName(e.target.value.slice(0, 10))}
-        placeholder="Your name (max 10 chars)"
-        maxLength={10}
-        className="w-full text-sm border border-stone-300 rounded-lg px-3 py-2 mb-4 bg-white focus:outline-none focus:ring-2 focus:ring-teal-600/30 focus:border-teal-600"
+        onChange={(e) => setName(e.target.value.slice(0, 8))}
+        placeholder="Your name (max 8 chars)"
+        maxLength={8}
+        className="w-full text-base border border-stone-300 rounded-lg px-3 py-2.5 mb-4 bg-white focus:outline-none focus:ring-2 focus:ring-teal-600/30 focus:border-teal-600"
       />
 
-      <p className="text-xs font-semibold text-stone-600 mb-1.5">Lesson Duration</p>
+      <p className="text-sm font-semibold text-stone-600 mb-1.5">Lesson Duration</p>
       <div className="mb-4">
         <LengthSelect value={duration} onChange={setDuration} options={validLengths} />
       </div>
 
-      <p className="text-xs font-semibold text-stone-600 mb-1.5">Booking Type</p>
+      <p className="text-sm font-semibold text-stone-600 mb-1.5">Booking Type</p>
       <div className="flex gap-2 mb-4">
         <button
           type="button"
           onClick={() => setBookingType('weekly')}
           style={{ backgroundColor: settings.colors.weekly, opacity: bookingType === 'weekly' ? 1 : 0.45 }}
-          className="flex-1 text-xs font-medium py-2 rounded-lg text-stone-800 transition-opacity"
+          className="flex-1 text-sm font-medium py-2.5 rounded-lg text-stone-800 transition-opacity"
         >
           This week only
         </button>
@@ -167,7 +167,7 @@ export function BookingPopup({ slot, settings, onClose, onConfirm, submitting })
           type="button"
           onClick={() => setBookingType('fixed')}
           style={{ backgroundColor: settings.colors.fixed, opacity: bookingType === 'fixed' ? 1 : 0.45 }}
-          className="flex-1 text-xs font-medium py-2 rounded-lg text-stone-800 transition-opacity"
+          className="flex-1 text-sm font-medium py-2.5 rounded-lg text-stone-800 transition-opacity"
         >
           Fixed lesson
         </button>
@@ -175,17 +175,17 @@ export function BookingPopup({ slot, settings, onClose, onConfirm, submitting })
 
       {settings.include_topic && (
         <div className="mb-4">
-          <p className="text-xs font-semibold text-stone-600 mb-1.5">Lesson Topic (optional)</p>
+          <p className="text-sm font-semibold text-stone-600 mb-1.5">Lesson Topic (optional)</p>
           <input
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
             placeholder="What would you like to focus on?"
-            className="w-full text-sm border border-stone-300 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-teal-600/30 focus:border-teal-600"
+            className="w-full text-base border border-stone-300 rounded-lg px-3 py-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-teal-600/30 focus:border-teal-600"
           />
         </div>
       )}
 
-      <div className="bg-white/60 border border-black/5 rounded-lg p-3 mb-4 text-xs text-stone-700 space-y-1">
+      <div className="bg-white/60 border border-black/5 rounded-lg p-3 mb-4 text-sm text-stone-700 space-y-1.5">
         <p><span className="font-semibold">Name:</span> {name || '—'}</p>
         <p><span className="font-semibold">Duration:</span> {duration}mins</p>
         <p><span className="font-semibold">Type:</span> {bookingType === 'weekly' ? 'This week only' : 'Fixed lesson'}</p>
@@ -193,11 +193,11 @@ export function BookingPopup({ slot, settings, onClose, onConfirm, submitting })
       </div>
 
       <div className="flex items-center justify-end gap-4 mt-2">
-        <button onClick={onClose} className="text-sm text-stone-600 hover:text-stone-800">Cancel</button>
+        <button onClick={onClose} className="text-base text-stone-600 hover:text-stone-800">Cancel</button>
         <button
           disabled={!name.trim() || submitting}
           onClick={() => onConfirm({ name: name.trim(), duration, type: bookingType, topic })}
-          className="bg-blue-600 disabled:bg-blue-300 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+          className="bg-blue-600 disabled:bg-blue-300 text-white text-base font-medium px-5 py-2.5 rounded-lg hover:bg-blue-700 transition-colors"
         >
           {submitting ? 'Booking…' : 'Book Lesson'}
         </button>
@@ -211,19 +211,19 @@ export function DeletePopup({ booking, onClose, onConfirm, submitting }) {
   const timeLabel = new Date(booking.start_time).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
   return (
     <PopupShell>
-      <p className="text-base font-bold text-stone-800 mb-4">Delete Booking</p>
-      <div className="text-sm text-stone-700 space-y-1.5 mb-5">
+      <p className="text-xl font-bold text-stone-800 mb-4">Delete Booking</p>
+      <div className="text-base text-stone-700 space-y-2 mb-5">
         <p><span className="font-semibold">Name:</span> {booking.student_name}</p>
         <p><span className="font-semibold">Time:</span> {dateLabel} {timeLabel}</p>
         <p><span className="font-semibold">Duration:</span> {booking.duration} minutes</p>
         <p><span className="font-semibold">Type:</span> {booking.booking_type}</p>
       </div>
       <div className="flex items-center justify-end gap-4">
-        <button onClick={onClose} className="text-sm text-stone-600 hover:text-stone-800">Cancel</button>
+        <button onClick={onClose} className="text-base text-stone-600 hover:text-stone-800">Cancel</button>
         <button
           disabled={submitting}
           onClick={onConfirm}
-          className="flex items-center gap-1.5 bg-rose-600 disabled:bg-rose-300 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-rose-700 transition-colors"
+          className="flex items-center gap-1.5 bg-rose-600 disabled:bg-rose-300 text-white text-base font-medium px-5 py-2.5 rounded-lg hover:bg-rose-700 transition-colors"
         >
           <Trash2 size={14} /> {submitting ? 'Deleting…' : 'Delete'}
         </button>
@@ -238,11 +238,11 @@ export function SuccessPopup({ message, onClose }) {
     <PopupShell>
       <div className="text-center py-2">
         {lines.map((line, i) => (
-          <p key={i} className={i === 0 ? 'text-lg font-bold text-emerald-700 mb-2' : 'text-sm text-stone-700 mb-1'}>
+          <p key={i} className={i === 0 ? 'text-2xl font-bold text-emerald-700 mb-3' : 'text-base text-stone-700 mb-1'}>
             {line}
           </p>
         ))}
-        <button onClick={onClose} className="mt-4 bg-blue-600 text-white text-sm font-medium px-5 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+        <button onClick={onClose} className="mt-4 bg-blue-600 text-white text-base font-medium px-6 py-2.5 rounded-lg hover:bg-blue-700 transition-colors">
           Got it
         </button>
       </div>
@@ -252,15 +252,15 @@ export function SuccessPopup({ message, onClose }) {
 
 export function CalendarSection({ settings, weekDates, setWeekOffset, bookings, onSlotClick, boundedHeight = true }) {
   return (
-    <div className="p-5 relative">
-      <h2 className="text-lg font-semibold text-stone-800 mb-1">{settings.headline || 'Book a Lesson'}</h2>
+    <div className="p-2 sm:p-5 relative text-center">
+      <h2 className="text-xl sm:text-lg font-semibold text-stone-800 mb-1">{settings.headline || 'Book a Lesson'}</h2>
       {settings.show_timezone_note && (
-        <p className="text-xs text-stone-500 mb-3">The slots displayed are in your local time zone!</p>
+        <p className="text-sm text-stone-500 mb-3">The slots displayed are in your local time zone!</p>
       )}
       {(settings.instructions || []).filter((i) => i.enabled).length > 0 && (
-        <ul className="text-xs text-stone-600 mb-4 space-y-1.5 list-disc pl-4">
-          {settings.instructions.filter((i) => i.enabled).map((i) => <li key={i.id}>{i.text}</li>)}
-        </ul>
+        <div className="text-sm text-stone-600 mb-4 space-y-1.5">
+          {settings.instructions.filter((i) => i.enabled).map((i) => <p key={i.id}>• {i.text}</p>)}
+        </div>
       )}
       <Legend colors={settings.colors} />
       <CalendarGrid settings={settings} weekDates={weekDates} setWeekOffset={setWeekOffset} bookings={bookings} onSlotClick={onSlotClick} boundedHeight={boundedHeight} />
@@ -270,18 +270,18 @@ export function CalendarSection({ settings, weekDates, setWeekOffset, bookings, 
 
 function WeekNav({ weekDates, setWeekOffset }) {
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: GRID_COLUMNS }} className="items-center py-3 px-1.5">
+    <div style={{ display: 'grid', gridTemplateColumns: GRID_COLUMNS }} className="items-center py-1.5 px-1.5">
       <div style={{ gridColumn: 2 }} className="flex justify-start">
-        <button onClick={() => setWeekOffset((o) => o - 1)} className="w-8 h-8 rounded-lg bg-sky-100 flex items-center justify-center hover:bg-sky-200 transition-colors">
-          <ChevronLeft size={16} className="text-stone-700" />
+        <button onClick={() => setWeekOffset((o) => o - 1)} className="w-7 h-7 rounded-lg bg-sky-100 flex items-center justify-center hover:bg-sky-200 transition-colors">
+          <ChevronLeft size={15} className="text-stone-700" />
         </button>
       </div>
       <div style={{ gridColumn: '3 / 8' }} className="flex justify-center">
         <p className="text-sm font-semibold text-stone-800 whitespace-nowrap">{weekRangeLabel(weekDates)}</p>
       </div>
       <div style={{ gridColumn: 8 }} className="flex justify-end">
-        <button onClick={() => setWeekOffset((o) => o + 1)} className="w-8 h-8 rounded-lg bg-sky-100 flex items-center justify-center hover:bg-sky-200 transition-colors">
-          <ChevronRight size={16} className="text-stone-700" />
+        <button onClick={() => setWeekOffset((o) => o + 1)} className="w-7 h-7 rounded-lg bg-sky-100 flex items-center justify-center hover:bg-sky-200 transition-colors">
+          <ChevronRight size={15} className="text-stone-700" />
         </button>
       </div>
     </div>
@@ -306,7 +306,7 @@ export function CalendarGrid({ settings, weekDates, setWeekOffset, bookings, onS
       <WeekNav weekDates={weekDates} setWeekOffset={setWeekOffset} />
 
       <div
-        className={`${boundedHeight ? 'max-h-80 overflow-y-auto' : ''} overflow-x-hidden border-t border-stone-100 px-1.5 pb-1.5`}
+        className={`${boundedHeight ? 'max-h-80 overflow-y-auto' : ''} px-1.5 pb-1.5`}
         style={{ touchAction: 'pan-y' }}
       >
         <div
@@ -317,9 +317,9 @@ export function CalendarGrid({ settings, weekDates, setWeekOffset, bookings, onS
           {weekDates.map((d, i) => {
             const today = isToday(d);
             return (
-              <div key={i} className={`rounded-md py-1.5 text-center ${today ? 'bg-rose-100' : 'bg-sky-100'}`}>
-                <p className="text-[11px] font-semibold text-stone-700">{DAY_LABELS[i]}</p>
-                <p className={`text-[11px] font-bold ${today ? 'text-rose-600' : 'text-stone-500'}`}>{d.getDate()}</p>
+              <div key={i} className={`rounded-md py-1 text-center ${today ? 'bg-rose-100' : 'bg-sky-100'}`}>
+                <p className="text-[13px] font-semibold text-stone-700">{DAY_LABELS[i]}</p>
+                <p className={`text-[13px] font-bold ${today ? 'text-rose-600' : 'text-stone-500'}`}>{d.getDate()}</p>
               </div>
             );
           })}
@@ -327,7 +327,11 @@ export function CalendarGrid({ settings, weekDates, setWeekOffset, bookings, onS
 
         <div style={{ display: 'grid', gridTemplateColumns: GRID_COLUMNS, gridAutoRows: '30px' }} className="gap-1">
           {times.map((time, rowIdx) => (
-            <div key={time} style={{ gridColumn: 1, gridRow: rowIdx + 1 }} className="text-[10px] text-stone-400 text-right pr-2 flex items-center justify-end">
+            <div
+              key={time}
+              style={{ gridColumn: 1, gridRow: rowIdx + 1, fontSize: 'clamp(9px, 2.6vw, 12px)' }}
+              className="text-stone-400 text-right pr-1.5 flex items-center justify-end"
+            >
               {time}
             </div>
           ))}
@@ -339,8 +343,8 @@ export function CalendarGrid({ settings, weekDates, setWeekOffset, bookings, onS
                   <button
                     key={`${dayIdx}-${cell.rowStart}`}
                     onClick={() => onSlotClick(dayIdx, cell.time, null, cell.utcInstant)}
-                    style={{ backgroundColor: settings.colors.free, gridColumn: dayIdx + 2, gridRow: cell.rowStart + 1 }}
-                    className="rounded text-[9px] flex items-center justify-center text-stone-700 hover:brightness-95 transition-all"
+                    style={{ backgroundColor: settings.colors.free, gridColumn: dayIdx + 2, gridRow: cell.rowStart + 1, fontSize: 'clamp(10px, 3vw, 13px)' }}
+                    className="rounded flex items-center justify-center text-stone-700 hover:brightness-95 transition-all"
                   >
                     Add
                   </button>
@@ -354,8 +358,9 @@ export function CalendarGrid({ settings, weekDates, setWeekOffset, bookings, onS
                     backgroundColor: settings.colors[cell.booking.booking_type],
                     gridColumn: dayIdx + 2,
                     gridRow: `${cell.rowStart + 1} / span ${cell.span}`,
+                    fontSize: 'clamp(9px, 2.8vw, 13px)',
                   }}
-                  className="rounded text-[10px] font-medium flex items-center justify-center text-center px-1 text-stone-800 hover:brightness-95 transition-all"
+                  className="rounded font-medium flex items-center justify-center text-center px-0.5 text-stone-800 hover:brightness-95 transition-all leading-tight"
                 >
                   {cell.booking.student_name}
                 </button>
