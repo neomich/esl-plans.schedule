@@ -99,6 +99,26 @@ automatically.
    "You're connected!" reply, then book a test lesson and check you
    get an alert.
 
+## 9. Friend-tier claim link (only once esl-plans.com's side is ready)
+
+This connects the app to esl-plans.com so schedules are only ever
+created for real, logged-in Friend-tier subscribers — the open
+"create your own schedule" page is retired.
+
+1. Run `supabase/migration_5_owner_email_and_claims.sql` (in this
+   project's `supabase/` folder, or the copy shared separately) in
+   this project's SQL Editor.
+2. In Supabase → Edge Functions, create a new function named exactly
+   `redeem-claim`, paste in `supabase/functions/redeem-claim/index.ts`,
+   and deploy it.
+3. In Supabase → Edge Functions → Secrets, add a secret named
+   `SCHEDULE_CLAIM_SECRET`. The value must be **identical** to the one
+   set in esl-plans.com's own Supabase project — this is the shared
+   secret the two systems use to trust each other.
+4. Nothing works end-to-end until esl-plans.com's matching pieces
+   (the `verify-schedule-claim` function and the "My Schedule" nav
+   button) are also in place — that's a separate step.
+
 ## Notes on the security model
 
 - Nobody but you can see your `admin_token` or your Telegram bot

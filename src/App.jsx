@@ -2,6 +2,7 @@ import React from 'react';
 import Landing from './pages/Landing.jsx';
 import Admin from './pages/Admin.jsx';
 import PublicBooking from './pages/PublicBooking.jsx';
+import ClaimPage from './pages/ClaimPage.jsx';
 import { isSupabaseConfigured } from './lib/supabase.js';
 
 function ConfigWarning() {
@@ -21,6 +22,9 @@ export default function App() {
   const path = window.location.pathname.replace(/^\/+|\/+$/g, ''); // trim slashes
 
   if (path === '') return <Landing />;
+
+  const claimMatch = path.match(/^claim\/([a-zA-Z0-9]+)$/);
+  if (claimMatch) return <ClaimPage token={claimMatch[1]} />;
 
   const adminMatch = path.match(/^([a-z0-9]+)\/manage$/);
   if (adminMatch) return <Admin slug={adminMatch[1]} />;
