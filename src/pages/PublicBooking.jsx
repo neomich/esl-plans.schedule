@@ -116,13 +116,13 @@ export default function PublicBooking({ slug }) {
           ) : (
             <>
               {/* Pinned block: headline, subheading, instructions, legend — never scrolls */}
-              <div className="flex-shrink-0 p-2 sm:p-5 pb-2 text-center">
-                <h2 className="text-xl sm:text-lg font-semibold text-stone-800 mb-1">{schedule.headline || 'Book a Lesson'}</h2>
+              <div className="flex-shrink-0 p-1.5 sm:p-4 pb-1 text-center">
+                <h2 className="text-xl sm:text-lg font-semibold text-stone-800 mb-0.5 leading-tight">{schedule.headline || 'Book a Lesson'}</h2>
                 {schedule.show_timezone_note && (
-                  <p className="text-sm text-stone-500 mb-3">The slots displayed are in your local time zone!</p>
+                  <p className="text-sm text-stone-500 mb-1.5 leading-tight">The slots displayed are in your local time zone!</p>
                 )}
                 {(schedule.instructions || []).filter((i) => i.enabled).length > 0 && (
-                  <div className="text-sm text-stone-600 mb-4 space-y-1.5 text-left">
+                  <div className="text-sm text-stone-600 mb-1.5 space-y-0.5 text-left leading-snug">
                     {schedule.instructions.filter((i) => i.enabled).map((i) => <p key={i.id}>• {i.text}</p>)}
                   </div>
                 )}

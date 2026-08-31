@@ -96,7 +96,7 @@ export function Toggle({ checked, onChange }) {
 
 export function Legend({ colors }) {
   return (
-    <div className="flex flex-wrap justify-center gap-4 text-sm text-stone-600 mb-4">
+    <div className="flex flex-wrap justify-center gap-4 text-sm text-stone-600 mb-1">
       <span className="flex items-center gap-1.5"><span className="w-3.5 h-3.5 rounded-full border border-black/10" style={{ backgroundColor: colors.free }} />Free</span>
       <span className="flex items-center gap-1.5"><span className="w-3.5 h-3.5 rounded-full border border-black/10" style={{ backgroundColor: colors.weekly }} />Booked this week</span>
       <span className="flex items-center gap-1.5"><span className="w-3.5 h-3.5 rounded-full border border-black/10" style={{ backgroundColor: colors.fixed }} />Fixed</span>
@@ -252,13 +252,13 @@ export function SuccessPopup({ message, onClose }) {
 
 export function CalendarSection({ settings, weekDates, setWeekOffset, bookings, onSlotClick, boundedHeight = true }) {
   return (
-    <div className="p-2 sm:p-5 relative text-center">
-      <h2 className="text-xl sm:text-lg font-semibold text-stone-800 mb-1">{settings.headline || 'Book a Lesson'}</h2>
+    <div className="p-1.5 sm:p-4 relative text-center">
+      <h2 className="text-xl sm:text-lg font-semibold text-stone-800 mb-0.5 leading-tight">{settings.headline || 'Book a Lesson'}</h2>
       {settings.show_timezone_note && (
-        <p className="text-sm text-stone-500 mb-3">The slots displayed are in your local time zone!</p>
+        <p className="text-sm text-stone-500 mb-1.5 leading-tight">The slots displayed are in your local time zone!</p>
       )}
       {(settings.instructions || []).filter((i) => i.enabled).length > 0 && (
-        <div className="text-sm text-stone-600 mb-4 space-y-1.5 text-left">
+        <div className="text-sm text-stone-600 mb-1.5 space-y-0.5 text-left leading-snug">
           {settings.instructions.filter((i) => i.enabled).map((i) => <p key={i.id}>• {i.text}</p>)}
         </div>
       )}
@@ -358,11 +358,11 @@ export function CalendarGrid({ settings, weekDates, setWeekOffset, bookings, onS
                     backgroundColor: settings.colors[cell.booking.booking_type],
                     gridColumn: dayIdx + 2,
                     gridRow: `${cell.rowStart + 1} / span ${cell.span}`,
-                    fontSize: 'clamp(9px, 2.8vw, 13px)',
+                    fontSize: 'clamp(7px, 2.6vw, 12px)',
                   }}
                   className="rounded font-medium flex items-center justify-center text-stone-800 hover:brightness-95 transition-all leading-tight overflow-hidden whitespace-nowrap"
                 >
-                  <span className="px-[3px] overflow-hidden text-ellipsis">{cell.booking.student_name}</span>
+                  <span className="px-[3px] overflow-hidden">{cell.booking.student_name}</span>
                 </button>
               );
             })
