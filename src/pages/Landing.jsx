@@ -53,12 +53,12 @@ export default function Landing() {
         </div>
         <h1 className="text-lg font-semibold text-stone-800 mb-2">Create your schedule</h1>
         <p className="text-sm text-stone-500 mb-6 leading-relaxed">
-          Pick a name for your link and a code for your students. You can change both later.
+          Pick a name for your link and a code for your students. The code can be changed anytime from your settings — the name is permanent, so choose carefully.
         </p>
 
         <label className="block text-xs text-stone-500 mb-1.5 text-left">Your schedule link</label>
-        <div className="flex items-center border border-stone-300 rounded-lg mb-4 overflow-hidden">
-          <span className="text-xs text-stone-400 pl-3 pr-1 shrink-0">yoursite.com/</span>
+        <div className="flex items-center border border-stone-300 rounded-lg mb-1 overflow-hidden">
+          <span className="text-xs text-stone-400 pl-3 pr-1 shrink-0">{window.location.host}/</span>
           <input
             value={desiredSlug}
             onChange={(e) => setDesiredSlug(e.target.value)}
@@ -66,6 +66,9 @@ export default function Landing() {
             className="flex-1 text-sm px-1 py-2 focus:outline-none min-w-0"
           />
         </div>
+        <p className="text-[11px] text-stone-400 mb-4">
+          This can't be changed later. Want a different one down the line? Just come back to this page to create a fresh schedule.
+        </p>
 
         <label className="block text-xs text-stone-500 mb-1.5 text-left">Student access code</label>
         <input
