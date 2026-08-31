@@ -142,9 +142,9 @@ export function BookingPopup({ slot, settings, onClose, onConfirm, submitting })
 
       <input
         value={name}
-        onChange={(e) => setName(e.target.value.slice(0, 8))}
-        placeholder="Your name (max 8 chars)"
-        maxLength={8}
+        onChange={(e) => setName(e.target.value.slice(0, 7))}
+        placeholder="Your name (max 7 chars)"
+        maxLength={7}
         className="w-full text-base border border-stone-300 rounded-lg px-3 py-2.5 mb-4 bg-white focus:outline-none focus:ring-2 focus:ring-teal-600/30 focus:border-teal-600"
       />
 
@@ -302,7 +302,7 @@ export function CalendarGrid({ settings, weekDates, setWeekOffset, bookings, onS
   );
 
   return (
-    <div className="border border-stone-200 rounded-lg overflow-hidden bg-white">
+    <div className={`border border-stone-200 rounded-lg bg-white ${boundedHeight ? 'overflow-hidden' : ''}`}>
       <WeekNav weekDates={weekDates} setWeekOffset={setWeekOffset} />
 
       <div
@@ -358,23 +358,11 @@ export function CalendarGrid({ settings, weekDates, setWeekOffset, bookings, onS
                     backgroundColor: settings.colors[cell.booking.booking_type],
                     gridColumn: dayIdx + 2,
                     gridRow: `${cell.rowStart + 1} / span ${cell.span}`,
+                    fontSize: 'clamp(9px, 2.8vw, 13px)',
                   }}
-                  className="rounded font-medium flex items-center justify-center px-1.5 text-stone-800 hover:brightness-95 transition-all leading-tight overflow-hidden"
+                  className="rounded font-medium flex items-center justify-center text-stone-800 hover:brightness-95 transition-all leading-tight overflow-hidden whitespace-nowrap"
                 >
-                  <span
-                    className="whitespace-nowrap overflow-hidden inline-block max-w-full"
-                    style={{
-                      fontSize: 'clamp(9px, 2.8vw, 13px)',
-                      ...(cell.booking.student_name.length > 7
-                        ? {
-                            WebkitMaskImage: 'linear-gradient(to right, black 60%, transparent 95%)',
-                            maskImage: 'linear-gradient(to right, black 60%, transparent 95%)',
-                          }
-                        : {}),
-                    }}
-                  >
-                    {cell.booking.student_name}
-                  </span>
+                  <span className="px-[3px] overflow-hidden text-ellipsis">{cell.booking.student_name}</span>
                 </button>
               );
             })
