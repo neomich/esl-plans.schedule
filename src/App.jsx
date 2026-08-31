@@ -22,11 +22,11 @@ export default function App() {
 
   if (path === '') return <Landing />;
 
-  const publicMatch = path.match(/^([a-z0-9]+)\/schedule$/);
-  if (publicMatch) return <PublicBooking slug={publicMatch[1]} />;
-
-  const adminMatch = path.match(/^([a-z0-9]+)$/);
+  const adminMatch = path.match(/^([a-z0-9]+)\/manage$/);
   if (adminMatch) return <Admin slug={adminMatch[1]} />;
+
+  const publicMatch = path.match(/^([a-z0-9]+)$/);
+  if (publicMatch) return <PublicBooking slug={publicMatch[1]} />;
 
   return (
     <div className="min-h-screen bg-sky-50 flex items-center justify-center p-6 text-center">

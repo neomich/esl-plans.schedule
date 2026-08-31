@@ -91,8 +91,8 @@ export default function PublicBooking({ slug }) {
 
   return (
     <div className="min-h-screen bg-sky-50 font-sans overflow-x-hidden" style={{ touchAction: 'pan-y' }}>
-      <div className="max-w-2xl mx-auto py-8 px-3">
-        <div className="border border-stone-200 rounded-2xl bg-white shadow-sm relative overflow-hidden">
+      <div className="sm:max-w-3xl sm:mx-auto sm:py-8 sm:px-4">
+        <div className="border-0 sm:border sm:border-stone-200 sm:rounded-2xl bg-white sm:shadow-sm relative overflow-hidden min-h-screen sm:min-h-0">
           {!unlocked ? (
             <div className="flex flex-col items-center justify-center py-14 px-6 text-center">
               <div className="w-11 h-11 rounded-full bg-teal-50 flex items-center justify-center mb-4">
@@ -121,6 +121,7 @@ export default function PublicBooking({ slug }) {
               setWeekOffset={bk.setWeekOffset}
               bookings={bk.bookings}
               onSlotClick={handleSlotClick}
+              boundedHeight={false}
             />
           )}
 

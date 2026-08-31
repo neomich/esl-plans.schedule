@@ -6,16 +6,16 @@ import {
 } from '../lib/dateHelpers.js';
 
 export const PASTELS = [
-  { name: 'Blush', hex: '#FBD8E2' },
-  { name: 'Peach', hex: '#FCE3C9' },
-  { name: 'Butter', hex: '#FBF1B4' },
-  { name: 'Mint', hex: '#D6F1DC' },
-  { name: 'Seafoam', hex: '#C9EDE4' },
-  { name: 'Sky', hex: '#CDE6FB' },
-  { name: 'Periwinkle', hex: '#DBD8FB' },
-  { name: 'Lilac', hex: '#E9D7F3' },
-  { name: 'Rose', hex: '#F8D9DE' },
-  { name: 'Sage', hex: '#DEE8D3' },
+  { name: 'Coral', hex: '#FCA5A5' },
+  { name: 'Tangerine', hex: '#FDBA74' },
+  { name: 'Marigold', hex: '#FCD34D' },
+  { name: 'Lime', hex: '#BEF264' },
+  { name: 'Mint', hex: '#86EFAC' },
+  { name: 'Teal', hex: '#5EEAD4' },
+  { name: 'Sky', hex: '#7DD3FC' },
+  { name: 'Blue', hex: '#93C5FD' },
+  { name: 'Violet', hex: '#C4B5FD' },
+  { name: 'Pink', hex: '#F9A8D4' },
 ];
 
 export const POPUP_BG = '#FCE9D4';
@@ -70,14 +70,14 @@ export function TimeSelect({ value, onChange, options = ALL_TIMES }) {
   );
 }
 
-export function LengthSelect({ value, onChange }) {
+export function LengthSelect({ value, onChange, options = LENGTH_OPTIONS }) {
   return (
     <select
       value={value}
       onChange={(e) => onChange(Number(e.target.value))}
       className="text-sm border border-stone-300 rounded-lg px-3 py-1.5 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-teal-600/30 focus:border-teal-600"
     >
-      {LENGTH_OPTIONS.map((m) => <option key={m} value={m}>{m} minutes</option>)}
+      {options.map((m) => <option key={m} value={m}>{m} minutes</option>)}
     </select>
   );
 }
@@ -150,7 +150,7 @@ export function BookingPopup({ slot, settings, onClose, onConfirm, submitting })
 
       <p className="text-xs font-semibold text-stone-600 mb-1.5">Lesson Duration</p>
       <div className="mb-4">
-        <LengthSelect value={duration} onChange={setDuration} />
+        <LengthSelect value={duration} onChange={setDuration} options={validLengths} />
       </div>
 
       <p className="text-xs font-semibold text-stone-600 mb-1.5">Booking Type</p>
@@ -250,7 +250,7 @@ export function SuccessPopup({ message, onClose }) {
   );
 }
 
-export function CalendarSection({ settings, weekDates, setWeekOffset, bookings, onSlotClick }) {
+export function CalendarSection({ settings, weekDates, setWeekOffset, bookings, onSlotClick, boundedHeight = true }) {
   return (
     <div className="p-5 relative">
       <h2 className="text-lg font-semibold text-stone-800 mb-1">{settings.headline || 'Book a Lesson'}</h2>
@@ -263,27 +263,33 @@ export function CalendarSection({ settings, weekDates, setWeekOffset, bookings, 
         </ul>
       )}
       <Legend colors={settings.colors} />
-      <CalendarGrid settings={settings} weekDates={weekDates} setWeekOffset={setWeekOffset} bookings={bookings} onSlotClick={onSlotClick} />
+      <CalendarGrid settings={settings} weekDates={weekDates} setWeekOffset={setWeekOffset} bookings={bookings} onSlotClick={onSlotClick} boundedHeight={boundedHeight} />
     </div>
   );
 }
 
 function WeekNav({ weekDates, setWeekOffset }) {
   return (
-    <div className="flex items-center justify-between px-2 py-3">
-      <button onClick={() => setWeekOffset((o) => o - 1)} className="w-8 h-8 rounded-lg bg-sky-100 flex items-center justify-center hover:bg-sky-200 transition-colors">
-        <ChevronLeft size={16} className="text-stone-700" />
-      </button>
-      <p className="text-sm font-semibold text-stone-800">{weekRangeLabel(weekDates)}</p>
-      <button onClick={() => setWeekOffset((o) => o + 1)} className="w-8 h-8 rounded-lg bg-sky-100 flex items-center justify-center hover:bg-sky-200 transition-colors">
-        <ChevronRight size={16} className="text-stone-700" />
-      </button>
+    <div style={{ display: 'grid', gridTemplateColumns: GRID_COLUMNS }} className="items-center py-3 px-1.5">
+      <div style={{ gridColumn: 2 }} className="flex justify-start">
+        <button onClick={() => setWeekOffset((o) => o - 1)} className="w-8 h-8 rounded-lg bg-sky-100 flex items-center justify-center hover:bg-sky-200 transition-colors">
+          <ChevronLeft size={16} className="text-stone-700" />
+        </button>
+      </div>
+      <div style={{ gridColumn: '3 / 8' }} className="flex justify-center">
+        <p className="text-sm font-semibold text-stone-800 whitespace-nowrap">{weekRangeLabel(weekDates)}</p>
+      </div>
+      <div style={{ gridColumn: 8 }} className="flex justify-end">
+        <button onClick={() => setWeekOffset((o) => o + 1)} className="w-8 h-8 rounded-lg bg-sky-100 flex items-center justify-center hover:bg-sky-200 transition-colors">
+          <ChevronRight size={16} className="text-stone-700" />
+        </button>
+      </div>
     </div>
   );
 }
 
 // bookings: array of real rows (start_time/end_time/duration/booking_type/student_name/topic)
-export function CalendarGrid({ settings, weekDates, setWeekOffset, bookings, onSlotClick }) {
+export function CalendarGrid({ settings, weekDates, setWeekOffset, bookings, onSlotClick, boundedHeight = true }) {
   const times = useMemo(
     () => ALL_TIMES.filter((t) => t >= settings.avail_from && t <= settings.avail_to),
     [settings.avail_from, settings.avail_to]
@@ -300,7 +306,10 @@ export function CalendarGrid({ settings, weekDates, setWeekOffset, bookings, onS
     <div className="border border-stone-200 rounded-lg overflow-hidden bg-white">
       <WeekNav weekDates={weekDates} setWeekOffset={setWeekOffset} />
 
-      <div className="max-h-80 overflow-y-auto overflow-x-hidden border-t border-stone-100 px-1.5 pb-1.5" style={{ touchAction: 'pan-y' }}>
+      <div
+        className={`${boundedHeight ? 'max-h-80 overflow-y-auto' : ''} overflow-x-hidden border-t border-stone-100 px-1.5 pb-1.5`}
+        style={{ touchAction: 'pan-y' }}
+      >
         <div
           style={{ display: 'grid', gridTemplateColumns: GRID_COLUMNS }}
           className="gap-1 sticky top-0 bg-white z-10 pt-1.5 pb-1.5"

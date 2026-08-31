@@ -105,7 +105,7 @@ export default function Admin({ slug }) {
 
   const copyLink = async () => {
     try {
-      await navigator.clipboard.writeText(`${window.location.origin}/${slug}/schedule`);
+      await navigator.clipboard.writeText(`${window.location.origin}/${slug}`);
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch (e) { /* clipboard unavailable */ }
@@ -131,11 +131,11 @@ export default function Admin({ slug }) {
       <div className="border-b border-stone-200 bg-white px-6 py-3 flex items-center justify-between">
         <p className="text-sm font-semibold text-stone-800">Your schedule settings</p>
         <div className="flex items-center gap-1.5 text-xs text-stone-400">
-          <CalendarDays size={13} /> {window.location.host}/{slug}/schedule
+          <CalendarDays size={13} /> {window.location.host}/{slug}
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto px-6 py-6 bg-white">
+      <div className="max-w-3xl mx-auto px-6 py-6 bg-white">
         <Section icon={Type} title="Header & messages">
           <label className="block text-xs text-stone-500 mb-1.5">Headline</label>
           <input
@@ -263,7 +263,7 @@ export default function Admin({ slug }) {
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto px-6 py-6 border-t border-stone-200 bg-sky-50">
+      <div className="max-w-3xl mx-auto px-6 py-6 border-t border-stone-200 bg-sky-50">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-1.5 text-sm font-semibold text-stone-700">
             <CalendarDays size={15} className="text-teal-700" /> Live preview

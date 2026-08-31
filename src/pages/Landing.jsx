@@ -30,7 +30,7 @@ export default function Landing() {
     }
     const { slug, admin_token } = data[0];
     localStorage.setItem(`admin_token_${slug}`, admin_token);
-    window.location.href = `/${slug}`;
+    window.location.href = `/${slug}/manage`;
   };
 
   return (
