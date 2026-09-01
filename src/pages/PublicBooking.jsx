@@ -71,9 +71,23 @@ export default function PublicBooking({ slug }) {
 
   const confirmDelete = async () => {
     setSubmitting(true);
-    await bk.deleteBooking(deleteTarget.id);
+    const { error } = await bk.deleteBooking(deleteTarget.id);
     setSubmitting(false);
     setDeleteTarget(null);
+    if (!error) {
+      const cancelledAt = deleteTarget.occurrenceInstant || new Date(deleteTarget.start_time);
+      supabase.functions.invoke('notify-booking', {
+        body: {
+          schedule_id: schedule.id,
+          student_name: deleteTarget.student_name,
+          start_time: cancelledAt.toISOString(),
+          duration: deleteTarget.duration,
+          booking_type: deleteTarget.booking_type,
+          topic: deleteTarget.topic,
+          action: 'cancelled',
+        },
+      }).catch(() => { /* notification is best-effort, never block the student */ });
+    }
   };
 
   if (notFound) {

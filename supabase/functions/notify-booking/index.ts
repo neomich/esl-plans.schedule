@@ -15,7 +15,8 @@ serve(async (req) => {
     const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
 
-    const { schedule_id, student_name, start_time, duration, booking_type, topic } = await req.json();
+    const { schedule_id, student_name, start_time, duration, booking_type, topic, action } = await req.json();
+    const isCancellation = action === 'cancelled';
 
     const { data: schedule, error } = await supabase
       .from('schedules')
@@ -37,7 +38,7 @@ serve(async (req) => {
 
     const typeLabel = booking_type === 'fixed' ? 'Fixed lesson' : 'This week only';
     const lines = [
-      `📅 New booking on your schedule!`,
+      isCancellation ? `❌ A booking was cancelled` : `📅 New booking on your schedule!`,
       `Student: ${student_name}`,
       `Time: ${teacherLocalTime} (your time)`,
       `Duration: ${duration} minutes`,
